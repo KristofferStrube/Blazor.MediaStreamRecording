@@ -1,0 +1,39 @@
+﻿<div class="top-row ps-3 navbar navbar-dark">
+    <div class="container-fluid">
+        <a class="navbar-brand" href="">Blazor.MediaStreamRecording</a>
+        <button title="Navigation menu" class="navbar-toggler" @onclick="ToggleNavMenu">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+    </div>
+</div>
+
+<div class="@NavMenuCssClass nav-scrollable" @onclick="ToggleNavMenu">
+    <nav class="flex-column">
+        <div class="nav-item px-3">
+            <NavLink class="nav-link" href="" Match="NavLinkMatch.All">
+                <span class="bi bi-house-door-fill-nav-menu" aria-hidden="true"></span> Home
+            </NavLink>
+        </div>
+        <div class="nav-item px-3">
+            <NavLink class="nav-link" href="Status">
+                <svg class="bi" viewBox="0 0 16 16">
+                    <polygon stroke="#FFFFFF" stroke-width="2" fill="transparent" points="8,2 1,14 15,14" stroke-linecap="round" stroke-linejoin="round"></polygon>
+                    <circle stroke="black" stroke-width="0" fill="#FFFFFF" cx="8" cy="11" r="1"></circle>
+                    <line stroke="#FFFFFF" stroke-width="2" x1="8" y1="7" x2="8" y2="8" stroke-linecap="round"></line>
+                </svg>
+                API Coverage Status
+            </NavLink>
+        </div>
+    </nav>
+</div>
+
+@code {
+    private bool collapseNavMenu = true;
+
+    private string? NavMenuCssClass => collapseNavMenu ? "collapse" : null;
+
+    private void ToggleNavMenu()
+    {
+        collapseNavMenu = !collapseNavMenu;
+    }
+}

@@ -1,0 +1,104 @@
+﻿@page "/Status"
+
+@inject HttpClient HttpClient
+@inject IJSRuntime JSRuntime
+
+<PageTitle>MediaStreamsRecording - Status</PageTitle>
+
+<div style="height:10vw;border-radius:20px;margin-bottom:20px;display:flex;align-content:center;justify-content:center;font-size:5vw;line-height:2;font-weight:900;font-family:consolas;background-color:@color">
+    @($"{percentImplemented:00%}") Covered!
+</div>
+
+<pre><code>@((MarkupString)compareText)</code></pre>
+
+@code {
+    private string compareText = "";
+    private double percentImplemented = 0;
+    private string color => $"#{(int)(255 - 111 * percentImplemented):X2}{(int)(192 + 46 * percentImplemented):X2}{(int)(203 - 59 * percentImplemented):X2}";
+
+    protected override async Task OnInitializedAsync()
+    {
+        var compareLines = new List<string>();
+        var lines = webIDL.Replace("<", "&lt;").Split('\n');
+        for (int i = 0; i < lines.Count(); i++)
+        {
+            var color = supportedRows.Any(interval => i >= interval.start && i <= interval.end) ? "lightgreen" : "pink";
+            compareLines.Add($"""<span style="background-color:{color};display:block;min-height:21px;">{lines[i]}</span>""");
+        }
+
+        compareText = string.Join("", compareLines);
+        var percentImplementedTotal = supportedRows.Sum(r => r.end - r.start + 1) / (float)webIDL.Split('\n').Count();
+        double delta = 0.00005;
+        while (percentImplemented < percentImplementedTotal)
+        {
+            await Task.Delay(1);
+            StateHasChanged();
+            percentImplemented += delta;
+            delta *= 1.005;
+        }
+        percentImplemented = percentImplementedTotal;
+        StateHasChanged();
+    }
+
+    private (int start, int end)[] supportedRows = new (int start, int end)[] {
+    };
+
+    private const string webIDL = @"[Exposed=Window]
+interface MediaRecorder : EventTarget {
+    constructor(MediaStream stream, optional MediaRecorderOptions options = {});
+    readonly attribute MediaStream stream;
+    readonly attribute DOMString mimeType;
+    readonly attribute RecordingState state;
+    attribute EventHandler onstart;
+    attribute EventHandler onstop;
+    attribute EventHandler ondataavailable;
+    attribute EventHandler onpause;
+    attribute EventHandler onresume;
+    attribute EventHandler onerror;
+    readonly attribute unsigned long videoBitsPerSecond;
+    readonly attribute unsigned long audioBitsPerSecond;
+    readonly attribute BitrateMode audioBitrateMode;
+
+    undefined start(optional unsigned long timeslice);
+    undefined stop();
+    undefined pause();
+    undefined resume();
+    undefined requestData();
+
+    static boolean isTypeSupported(DOMString type);
+};
+
+dictionary MediaRecorderOptions {
+    DOMString mimeType = """";
+    unsigned long audioBitsPerSecond;
+    unsigned long videoBitsPerSecond;
+    unsigned long bitsPerSecond;
+    BitrateMode audioBitrateMode = ""variable"";
+    DOMHighResTimeStamp videoKeyFrameIntervalDuration;
+    unsigned long videoKeyFrameIntervalCount;
+};
+
+enum BitrateMode {
+    ""constant"",
+    ""variable""
+};
+
+enum RecordingState {
+    ""inactive"",
+    ""recording"",
+    ""paused""
+};
+
+[Exposed=Window]
+interface BlobEvent : Event {
+    constructor(DOMString type, BlobEventInit eventInitDict);
+    [SameObject] readonly attribute Blob data;
+    readonly attribute DOMHighResTimeStamp timecode;
+};
+
+dictionary BlobEventInit {
+    required Blob data;
+    DOMHighResTimeStamp timecode;
+};";
+
+}
