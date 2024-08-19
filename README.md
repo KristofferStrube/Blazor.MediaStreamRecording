@@ -13,14 +13,12 @@ It additionally makes it possible to query which encodings the current platform 
 This project implements a wrapper around the API for Blazor so that we can easily and safely record sound in the browser.
 
 **This wrapper is still under development.**
-<!--
 # Demo
 The sample project can be demoed at https://kristofferstrube.github.io/Blazor.MediaStreamRecording/
 
 On each page, you can find the corresponding code for the example in the top right corner.
 
 On the [API Coverage Status](https://kristofferstrube.github.io/Blazor.MediaStreamRecording/Status) page, you can see how much of the WebIDL specs this wrapper has covered.
--->
 
 # Related repositories
 The library uses the following other packages to support its features:
