@@ -2,6 +2,10 @@
 
 namespace KristofferStrube.Blazor.MediaStreamRecording;
 
+/// <summary>
+/// Defines the different ways that audio can encoded with a <see cref="MediaRecorder"/>.
+/// </summary>
+/// <remarks><see href="https://www.w3.org/TR/mediastream-recording/#enumdef-bitratemode">See the API definition here</see>.</remarks>
 [JsonConverter(typeof(BitrateModeConverter))]
 public enum BitrateMode
 {

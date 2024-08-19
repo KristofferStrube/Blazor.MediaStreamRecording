@@ -52,6 +52,41 @@ public class MediaRecorder : EventTarget, IJSCreatable<MediaRecorder>
     }
 
     /// <summary>
+    /// Gets the <see cref="MediaStream"/> to be recorded.
+    /// </summary>
+    public async Task<MediaStream> GetStreamAsync()
+    {
+        IJSObjectReference helper = await mediaStreamHelperTask.Value;
+        IJSObjectReference jSInstance = await helper.InvokeAsync<IJSObjectReference>("getAttribute", JSReference, "stream");
+        return await MediaStream.CreateAsync(JSRuntime, jSInstance, new() { DisposesJSReference = true });
+    }
+
+    /// <summary>
+    /// Gets the MIME type used by the <see cref="MediaRecorder"/> object.
+    /// The User Agent will be able to play back any of the MIME types it supports for recording.
+    /// For example, it should be able to display a video recording in the HTML <c>&lt;video&gt;</c> tag.
+    /// </summary>
+    /// <remarks>
+    /// MIME type specifies the media type and container format for the recording via a type/subtype combination,
+    /// with the codecs and/or profiles parameters specified where ambiguity might arise.
+    /// Individual codecs might have further optional specific parameters.
+    /// </remarks>
+    public async Task<string> GetMimeTypeAsync()
+    {
+        IJSObjectReference helper = await mediaStreamHelperTask.Value;
+        return await helper.InvokeAsync<string>("getAttribute", JSReference, "mimeType");
+    }
+
+    /// <summary>
+    /// The current state of the <see cref="MediaRecorder"/> object.
+    /// </summary>
+    public async Task<RecordingState> GetStateAsync()
+    {
+        IJSObjectReference helper = await mediaStreamHelperTask.Value;
+        return await helper.InvokeAsync<RecordingState>("getAttribute", JSReference, "state");
+    }
+
+    /// <summary>
     /// Adds an <see cref="EventListener{TEvent}"/> for when the User Agent returns data to the application.
     /// The data attribute of this event contains a <see cref="Blob"/> of recorded data.
     /// </summary>

@@ -44,6 +44,9 @@ public class MediaRecorderOptions
     /// <summary>
     /// Specifes the <see cref="BitrateMode"/> that should be used to encode the Audio track(s).
     /// </summary>
+    /// <remarks>
+    /// Defaults to <see cref="BitrateMode.Variable"/>.
+    /// </remarks>
     [JsonPropertyName("audioBitrateMode")]
     public BitrateMode AudioBitrateMode { get; set; } = BitrateMode.Variable;
 
