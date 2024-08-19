@@ -8,6 +8,7 @@
 
 # Blazor.MediaStreamRecording
 A Blazor wrapper for the [MediaStream Recording browser API.](https://www.w3.org/TR/mediastream-recording/)
+
 This Web API makes it easy to record sound from a `MediaStream`.
 It additionally makes it possible to query which encodings the current platform has available for recording.
 This project implements a wrapper around the API for Blazor so that we can easily and safely record sound in the browser.
