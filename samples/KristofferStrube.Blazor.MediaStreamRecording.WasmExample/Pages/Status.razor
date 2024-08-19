@@ -40,7 +40,15 @@
         StateHasChanged();
     }
 
-    private (int start, int end)[] supportedRows = new (int start, int end)[] {
+    private (int start, int end)[] supportedRows = new (int start, int end)[]
+    {
+        (0, 2),
+        (8, 8),
+        (16, 17),
+        (23, 38),
+        (46, 47),
+        (49, 49),
+        (51, 51)
     };
 
     private const string webIDL = @"[Exposed=Window]
