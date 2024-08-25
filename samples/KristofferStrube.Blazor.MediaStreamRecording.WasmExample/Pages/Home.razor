@@ -16,34 +16,72 @@
 }
 else if (mediaStream is null)
 {
-    <button class="btn btn-primary" @onclick="Open">Open Microphone MediaStream</button>
+    <button class="btn btn-success" @onclick="Open">Open Microphone</button>
 }
 else if (recorder is null)
 {
-    <button class="btn btn-danger" @onclick="StartRecording">Start Recording</button>
+    <svg class="bi" viewBox="0 0 16 16" height="60">
+        <g @onclick="StartRecording" style="cursor:pointer">
+            <title>Start Recording</title>
+            <circle stroke="black" stroke-width="0" fill="#B61C1C" cx="8" cy="4" r="2"></circle>
+            <circle stroke="black" stroke-width="0" fill="#B61C1C" cx="8" cy="8" r="2"></circle>
+            <rect stroke="black" stroke-width="0" fill="#B61C1C" x="6" y="4" width="4" height="4"></rect>
+            <path stroke="#B61C1C" stroke-width="1.5" fill="none" d="M 4 8 C 4 13 12 13 12 8" stroke-linecap="round"></path>
+            <line stroke="#B61C1C" stroke-width="1.5" x1="8" y1="13" x2="8" y2="12" stroke-linecap="round"></line>
+            <circle stroke="#B61C1C" stroke-width="1" fill="transparent" cx="8" cy="8" r="7"></circle>
+        </g>
+    </svg>
+    <AmplitudePlot Analyser="liveAnalyzer" />
 }
 else if (audioBuffer is null)
 {
-    <button class="btn btn-success" @onclick="StopRecording">Stop Recording</button>
+    <svg class="bi" viewBox="0 0 16 16" height="60">
+        <g @onclick="StopRecording" style="cursor:pointer">
+            <title>Stop Recording</title>
+            <circle stroke="#212121" stroke-width="1" fill="transparent" cx="8" cy="8" r="7"></circle>
+            <rect stroke="#212121" stroke-width="1" fill="#212121" x="9" y="4" width="2" height="8" stroke-linejoin="round" stroke-linecap="round"></rect>
+            <rect stroke="#212121" stroke-width="1" fill="#212121" x="5" y="4" width="2" height="8" stroke-linejoin="round" stroke-linecap="round"></rect>
+        </g>
+    </svg>
+    <AmplitudePlot Analyser="liveAnalyzer" Color="#F00" />
 }
 else if (audioSourceNode is null)
 {
-    <button class="btn btn-success" @onclick="PlayRecording">Play Recording</button>
+    <svg class="bi" viewBox="0 0 16 16" height="60">
+        <g @onclick="PlayRecording" style="cursor:pointer">
+            <title>Play Recording</title>
+            <circle stroke="#B61C1C" stroke-width="1" fill="transparent" cx="8" cy="8" r="7"></circle>
+            <polygon stroke="#B61C1C" stroke-width="1" fill="#B61C1C" points="6,4 12,8 6,12" stroke-linecap="round" stroke-linejoin="round"></polygon>
+        </g>
+    </svg>
 }
 else
 {
-    <button class="btn btn-success" @onclick="StopPlayingRecording">Stop Playing Recording</button>
+    <svg class="bi" viewBox="0 0 16 16" height="60">
+        <g @onclick="StopPlayingRecording" style="cursor:pointer">
+            <title>
+                Stop Playing Recording
+            </title>
+            <circle stroke="#B61C1C" stroke-width="1" fill="transparent" cx="8" cy="8" r="7"></circle>
+            <rect stroke="#B61C1C" stroke-width="1" fill="#B61C1C" x="5" y="5" width="6" height="6" stroke-linejoin="round"></rect>
+        </g>
+    </svg>
+    <AmplitudePlot Analyser="bufferAnalyzer" />
 }
 
 @code {
     private string? error;
     MediaStream? mediaStream;
+    MediaStreamAudioSourceNode? liveSourceNoce;
+    AnalyserNode? liveAnalyzer;
+
     MediaRecorder? recorder;
     EventListener<BlobEvent>? dataAvailableEventListener;
     AudioBuffer? audioBuffer;
     List<Blob> blobsRecorded = new();
     AudioContext? context;
     AudioBufferSourceNode? audioSourceNode;
+    AnalyserNode? bufferAnalyzer;
 
     private async Task Open()
     {
@@ -51,6 +89,16 @@ else
         {
             MediaDevices mediaDevices = await MediaDevicesService.GetMediaDevicesAsync();
             mediaStream = await mediaDevices.GetUserMediaAsync(new MediaStreamConstraints() { Audio = true });
+
+            context = await AudioContext.CreateAsync(JSRuntime);
+
+            MediaStreamAudioSourceOptions options = new()
+                {
+                    MediaStream = mediaStream
+                };
+            liveSourceNoce = await MediaStreamAudioSourceNode.CreateAsync(JSRuntime, context, options);
+            liveAnalyzer = await AnalyserNode.CreateAsync(JSRuntime, context);
+            await liveSourceNoce.ConnectAsync(liveAnalyzer);
         }
         catch (WebIDLException ex)
         {
@@ -76,7 +124,7 @@ else
 
     private async Task StopRecording()
     {
-        if (mediaStream is null || recorder is null || dataAvailableEventListener is null) return;
+        if (mediaStream is null || recorder is null || dataAvailableEventListener is null || context is null) return;
 
         try
         {
@@ -99,8 +147,6 @@ else
             );
 
             byte[] audioData = await combinedBlob.ArrayBufferAsync();
-
-            context = await AudioContext.CreateAsync(JSRuntime);
             audioBuffer = await context.DecodeAudioDataAsync(audioData);
         }
         catch (WebIDLException ex)
@@ -122,6 +168,10 @@ else
         );
 
         await audioSourceNode.ConnectAsync(destination);
+
+        bufferAnalyzer = await AnalyserNode.CreateAsync(JSRuntime, context);
+        await audioSourceNode.ConnectAsync(bufferAnalyzer);
+
         await audioSourceNode.StartAsync();
     }
 
