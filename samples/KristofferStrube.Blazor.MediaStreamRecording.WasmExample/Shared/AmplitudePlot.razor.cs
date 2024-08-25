@@ -12,6 +12,7 @@ public partial class AmplitudePlot : ComponentBase, IDisposable
     private bool running;
     private Canvas canvas = default!;
     private readonly System.Timers.Timer timer = new(20);
+    private Uint8Array? timeDomainData;
 
     private string canvasStyle => $"height:{Height}px;width:100%;";
 
@@ -36,7 +37,7 @@ public partial class AmplitudePlot : ComponentBase, IDisposable
         running = true;
 
         int bufferLength = (int)await Analyser.GetFftSizeAsync();
-        Uint8Array timeDomainData = await Uint8Array.CreateAsync(JSRuntime, bufferLength);
+        timeDomainData = await Uint8Array.CreateAsync(JSRuntime, bufferLength);
 
         int i = 0;
         timer.Elapsed += async (_, _) =>
@@ -72,9 +73,11 @@ public partial class AmplitudePlot : ComponentBase, IDisposable
         timer.Enabled = true;
     }
 
-    public void Dispose()
+    public async void Dispose()
     {
         timer.Stop();
+        if (timeDomainData is not null)
+            await timeDomainData.DisposeAsync();
         GC.SuppressFinalize(this);
     }
 }
