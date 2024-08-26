@@ -1,10 +1,10 @@
 ﻿using KristofferStrube.Blazor.DOM;
-using KristofferStrube.Blazor.MediaCaptureStreams;
-using KristofferStrube.Blazor.WebIDL;
 using KristofferStrube.Blazor.FileAPI;
-using Microsoft.JSInterop;
+using KristofferStrube.Blazor.MediaCaptureStreams;
 using KristofferStrube.Blazor.MediaStreamRecording.Extensions;
+using KristofferStrube.Blazor.WebIDL;
 using KristofferStrube.Blazor.Window;
+using Microsoft.JSInterop;
 
 namespace KristofferStrube.Blazor.MediaStreamRecording;
 
