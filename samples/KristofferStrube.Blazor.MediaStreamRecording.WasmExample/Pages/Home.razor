@@ -140,11 +140,7 @@ else
             await dataAvailableEventListener.DisposeAsync();
             await recorder.DisposeAsync();
 
-            Blob combinedBlob = await Blob.CreateAsync(
-                JSRuntime,
-                blobsRecorded.Select(b => (BlobPart)b).ToList(),
-                new() { Type = await blobsRecorded.Last().GetTypeAsync() }
-            );
+            Blob combinedBlob = await Blob.CreateAsync(JSRuntime, [.. blobsRecorded] );
 
             byte[] audioData = await combinedBlob.ArrayBufferAsync();
             audioBuffer = await context.DecodeAudioDataAsync(audioData);
