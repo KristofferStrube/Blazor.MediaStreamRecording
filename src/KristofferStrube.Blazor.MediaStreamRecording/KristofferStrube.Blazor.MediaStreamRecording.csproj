@@ -4,8 +4,30 @@
     <TargetFramework>net7.0</TargetFramework>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
+    <Title>MediaStream Recording API wrapper</Title>
+    <Description>MediaStream Recording API wrapper implementation for Blazor.</Description>
+    <PackageId>KristofferStrube.Blazor.MediaStreamRecording</PackageId>
+    <PackageTags>Blazor;Wasm;Wrapper;Audio;Video;MediaStream;Recording;JSInterop</PackageTags>
+    <RepositoryUrl>https://github.com/KristofferStrube/Blazor.MediaStreamRecording</RepositoryUrl>
+    <RepositoryType>git</RepositoryType>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
+    <PackageVersion>0.1.0-alpha.1</PackageVersion>
+    <Authors>Kristoffer Strube</Authors>
+    <PackageReadmeFile>README.md</PackageReadmeFile>
+    <PackageIcon>icon.png</PackageIcon>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
   </PropertyGroup>
 
+  <ItemGroup>
+    <None Include="..\..\docs\icon.png">
+      <Pack>True</Pack>
+      <PackagePath>\</PackagePath>
+    </None>
+    <None Include="..\..\README.md">
+      <Pack>True</Pack>
+      <PackagePath>\</PackagePath>
+    </None>
+  </ItemGroup>
 
   <ItemGroup>
     <SupportedPlatform Include="browser" />
@@ -14,6 +36,7 @@
   <ItemGroup>
     <PackageReference Include="KristofferStrube.Blazor.FileAPI" Version="0.3.0" />
     <PackageReference Include="KristofferStrube.Blazor.MediaCaptureStreams" Version="0.3.0" />
+    <PackageReference Include="KristofferStrube.Blazor.Window" Version="0.1.0-alpha.6" />
     <PackageReference Include="Microsoft.AspNetCore.Components.Web" Version="7.0.15" />
   </ItemGroup>
 
