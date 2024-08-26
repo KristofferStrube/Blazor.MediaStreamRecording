@@ -9,7 +9,7 @@ namespace KristofferStrube.Blazor.MediaStreamRecording;
 /// <summary>
 /// The data attribute of this event contains a <see cref="Blob"/> of recorded data.
 /// </summary>
-/// <remarks><see href="https://www.w3.org/TR/mediastream-recording/#mediarecorder">See the API definition here</see>.</remarks>
+/// <remarks><see href="https://www.w3.org/TR/mediastream-recording/#blobevent">See the API definition here</see>.</remarks>
 [IJSWrapperConverter]
 public class BlobEvent : Event, IJSCreatable<BlobEvent>
 {
@@ -17,6 +17,21 @@ public class BlobEvent : Event, IJSCreatable<BlobEvent>
     /// A lazily evaluated task that gives access to helper methods for the MediaStream Recording API.
     /// </summary>
     protected readonly Lazy<Task<IJSObjectReference>> mediaStreamHelperTask;
+
+    /// <summary>
+    /// Creates an <see cref="BlobEvent"/> using the standard constructor.
+    /// </summary>
+    /// <param name="jSRuntime">An <see cref="IJSRuntime"/> instance.</param>
+    /// <param name="type">The type of the <see cref="Event"/>.</param>
+    /// <param name="eventInitDict">Extra options for setting options specific to the the <see cref="BlobEvent"/>.</param>
+    /// <returns>A new instance of an <see cref="BlobEvent"/>.</returns>
+    public static async Task<BlobEvent> CreateAsync(IJSRuntime jSRuntime, string type, BlobEventInit? eventInitDict = null)
+    {
+        await using IJSObjectReference helper = await jSRuntime.GetHelperAsync();
+        object? init = eventInitDict is null ? null : new { data = eventInitDict.Data.JSReference, timecode = eventInitDict.Timecode };
+        IJSObjectReference jSInstance = await helper.InvokeAsync<IJSObjectReference>("constructBlobEvent", type, init);
+        return new BlobEvent(jSRuntime, jSInstance, new() { DisposesJSReference = true });
+    }
 
     /// <inheritdoc/>
     public static new Task<BlobEvent> CreateAsync(IJSRuntime jSRuntime, IJSObjectReference jSReference)
@@ -57,5 +72,6 @@ public class BlobEvent : Event, IJSCreatable<BlobEvent>
             await helper.DisposeAsync();
         }
         await base.DisposeAsync();
+        GC.SuppressFinalize(this);
     }
 }

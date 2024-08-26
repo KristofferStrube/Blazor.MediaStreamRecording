@@ -10,11 +10,11 @@ namespace KristofferStrube.Blazor.MediaStreamRecording.WasmExample.Shared;
 public partial class AmplitudePlot : ComponentBase, IDisposable
 {
     private bool running;
-    private Canvas canvas = default!;
     private readonly System.Timers.Timer timer = new(20);
     private Uint8Array? timeDomainData;
 
-    private string canvasStyle => $"height:{Height}px;width:100%;";
+    public required Canvas canvas;
+    public string CanvasStyle => $"height:{Height}px;width:100%;";
 
     [Inject]
     public required IJSRuntime JSRuntime { get; set; }
