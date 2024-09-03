@@ -1,0 +1,94 @@
+﻿@page "/VideoRecording/"
+@using KristofferStrube.Blazor.DOM
+@using KristofferStrube.Blazor.FileAPI
+@using KristofferStrube.Blazor.MediaCaptureStreams
+@using KristofferStrube.Blazor.WebAudio
+@using KristofferStrube.Blazor.WebIDL.Exceptions
+@inject IJSRuntime JSRuntime
+@inject IMediaDevicesService MediaDevicesService
+@inject IURLService URLService
+@implements IAsyncDisposable
+
+<PageTitle>Blazor.MediaStreamRecording - Video Recording</PageTitle>
+
+<h2>
+    Video Recording
+</h2>
+<p>
+    In this demo you can record some video and replay it or download it.
+</p>
+
+@if (error is not null)
+{
+    <code>@error</code>
+}
+else if (mediaStream is null)
+{
+    <button class="btn btn-success" @onclick=OpenVideoStream>Open Camera</button>
+}
+else if (recorder is null)
+{
+    <svg class="bi" viewBox="0 0 16 16" height="60">
+        <g @onclick="StartRecording" style="cursor:pointer">
+            <title>Start Recording</title>
+            <rect stroke="#FFFFFF" stroke-width="0" fill="#B61C1C" x="3" y="6" width="5" height="4"></rect>
+            <polygon stroke="#FFFFFF" stroke-width="0" fill="#B61C1C" points="9,6 9,10 12,12 12,4"></polygon>
+            <circle stroke="#B61C1C" stroke-width="1" fill="transparent" cx="8" cy="8" r="7"></circle>
+        </g>
+    </svg>
+    <br />
+    @if (videoOptions.Count > 0)
+    {
+        <label for="videoSource">Video Source</label>
+        <select id="videoSource" @bind=selectedVideoSource @bind:after="OpenVideoStream">
+            @foreach (var option in videoOptions)
+            {
+                <option value="@option.id" selected="@(option.id == selectedVideoSource)">@option.label</option>
+            }
+        </select>
+    }
+    <br />
+    <video @ref="videoElement" height="400" autoplay controls></video>
+}
+else if (combinedBlob is null)
+{
+    <svg class="bi" viewBox="0 0 16 16" height="60">
+        <g @onclick="StopRecording" style="cursor:pointer">
+            <title>Stop Recording</title>
+            <circle stroke="#212121" stroke-width="1" fill="transparent" cx="8" cy="8" r="7"></circle>
+            <rect stroke="#212121" stroke-width="1" fill="#212121" x="9" y="4" width="2" height="8" stroke-linejoin="round" stroke-linecap="round"></rect>
+            <rect stroke="#212121" stroke-width="1" fill="#212121" x="5" y="4" width="2" height="8" stroke-linejoin="round" stroke-linecap="round"></rect>
+        </g>
+    </svg>
+    <br />
+    <video @ref="videoElement" height="400" autoplay controls></video>
+}
+else if (!playing)
+{
+    <svg class="bi" viewBox="0 0 16 16" height="60">
+        <g @onclick="PlayRecording" style="cursor:pointer">
+            <title>Play Recording</title>
+            <circle stroke="#B61C1C" stroke-width="1" fill="transparent" cx="8" cy="8" r="7"></circle>
+            <polygon stroke="#B61C1C" stroke-width="1" fill="#B61C1C" points="6,4 12,8 6,12" stroke-linecap="round" stroke-linejoin="round"></polygon>
+        </g>
+    </svg>
+    <br />
+    <a href="@combinedBlobURL" target="_blank" download>Download</a>
+}
+else
+{
+    <svg class="bi" viewBox="0 0 16 16" height="60">
+        <g @onclick="StopPlayingRecording" style="cursor:pointer">
+            <title>
+                Stop Playing Recording
+            </title>
+            <circle stroke="#B61C1C" stroke-width="1" fill="transparent" cx="8" cy="8" r="7"></circle>
+            <rect stroke="#B61C1C" stroke-width="1" fill="#B61C1C" x="5" y="5" width="6" height="6" stroke-linejoin="round"></rect>
+        </g>
+    </svg>
+    <br />
+    <a href="@combinedBlobURL" target="_blank" download>Download</a>
+    <br />
+    <video src="@combinedBlobURL" height="400" autoplay controls></video>
+}
+
