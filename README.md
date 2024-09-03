@@ -67,12 +67,13 @@ await Task.Delay(5000);
 await recorder.StopAsync();
 
 // Combines and collects the total audio data.
-await using Blob combinedBlob = await Blob.CreateAsync(JSRuntime, [.. blobsRecorded]);
+Blob combinedBlob = await Blob.CreateAsync(JSRuntime, [.. blobsRecorded]);
 byte[] audioData = await combinedBlob.ArrayBufferAsync();
+await combinedBlob.JSReference.DisposeAsync();
 
 // Dispose of blob parts created while recording.
 foreach (Blob blob in blobsRecorded)
-    await blob.DisposeAsync();
+    await blob.JSReference.DisposeAsync();
 ```
 
 
