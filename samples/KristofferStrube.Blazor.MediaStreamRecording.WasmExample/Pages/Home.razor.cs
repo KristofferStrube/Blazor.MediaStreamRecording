@@ -10,7 +10,7 @@ public partial class Home
 {
     private string? error;
     private MediaStream? mediaStream;
-    private readonly List<(string label, string id)> audioOptions = new();
+    private readonly List<(string label, string id)> audioOptions = [];
     private string? selectedAudioSource;
     private MediaStreamAudioSourceNode? liveSourceNoce;
     private AnalyserNode? liveAnalyzer;
@@ -18,13 +18,14 @@ public partial class Home
     private MediaRecorder? recorder;
     private EventListener<BlobEvent>? dataAvailableEventListener;
     private Blob? combinedBlob;
+    private string combinedBlobURL = "";
     private AudioBuffer? audioBuffer;
-    private readonly List<Blob> blobsRecorded = new();
+    private readonly List<Blob> blobsRecorded = [];
     private AudioContext? context;
     private AudioBufferSourceNode? audioSourceNode;
     private AnalyserNode? bufferAnalyzer;
 
-    private AmplitudePlot plot;
+    private AmplitudePlot plot = default!;
 
     private async Task OpenAudioStream()
     {
@@ -110,6 +111,7 @@ public partial class Home
             await recorder.DisposeAsync();
 
             combinedBlob = await Blob.CreateAsync(JSRuntime, [.. blobsRecorded], new() { Type = await blobsRecorded.First().GetTypeAsync() });
+            combinedBlobURL = await URLService.CreateObjectURLAsync(combinedBlob);
 
             foreach (Blob blob in blobsRecorded)
             {
@@ -201,6 +203,9 @@ public partial class Home
         }
         if (combinedBlob is not null)
             await combinedBlob.JSReference.DisposeAsync();
+
+        if (combinedBlobURL is not "")
+            await URLService.RevokeObjectURLAsync(combinedBlobURL);
     }
 
     public async ValueTask DisposeAsync()

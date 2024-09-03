@@ -1,3 +1,4 @@
+using KristofferStrube.Blazor.FileAPI;
 using KristofferStrube.Blazor.MediaCaptureStreams;
 using KristofferStrube.Blazor.MediaStreamRecording.WasmExample;
 using KristofferStrube.Blazor.WebIDL;
@@ -12,6 +13,8 @@ builder.Services.AddScoped(sp => new HttpClient { BaseAddress = new Uri(builder.
 
 // Adding IMediaDevicesService to service collection.
 builder.Services.AddMediaDevicesService();
+
+builder.Services.AddURLService();
 
 WebAssemblyHost app = builder.Build();
 

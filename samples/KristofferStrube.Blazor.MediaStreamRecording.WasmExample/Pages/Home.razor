@@ -5,7 +5,8 @@
 @using KristofferStrube.Blazor.WebAudio
 @using KristofferStrube.Blazor.WebIDL.Exceptions
 @inject IJSRuntime JSRuntime
-@inject IMediaDevicesService MediaDevicesService;
+@inject IMediaDevicesService MediaDevicesService
+@inject IURLService URLService
 @implements IAsyncDisposable
 
 <PageTitle>Blazor.MediaStreamRecording - Audio Recording</PageTitle>
@@ -72,6 +73,8 @@ else if (audioSourceNode is null)
             <polygon stroke="#B61C1C" stroke-width="1" fill="#B61C1C" points="6,4 12,8 6,12" stroke-linecap="round" stroke-linejoin="round"></polygon>
         </g>
     </svg>
+    <br />
+    <a href="@combinedBlobURL" target="_blank" download>Download</a>
 }
 else
 {
@@ -84,6 +87,9 @@ else
             <rect stroke="#B61C1C" stroke-width="1" fill="#B61C1C" x="5" y="5" width="6" height="6" stroke-linejoin="round"></rect>
         </g>
     </svg>
+    <br />
+    <a href="@combinedBlobURL" target="_blank" download>Download</a>
+    <br />
     <AmplitudePlot @ref=plot Analyser="bufferAnalyzer" />
 }
 
