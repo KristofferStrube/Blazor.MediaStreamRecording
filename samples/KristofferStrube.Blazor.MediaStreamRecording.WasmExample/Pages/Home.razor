@@ -8,7 +8,14 @@
 @inject IMediaDevicesService MediaDevicesService;
 @implements IAsyncDisposable
 
-<PageTitle>Blazor.MediaStreamRecording - Recording</PageTitle>
+<PageTitle>Blazor.MediaStreamRecording - Audio Recording</PageTitle>
+
+<h2>
+    Audio Recording
+</h2>
+<p>
+    In this demo you can record some audio and replay it or download it.
+</p>
 
 @if (error is not null)
 {
@@ -16,7 +23,7 @@
 }
 else if (mediaStream is null)
 {
-    <button class="btn btn-success" @onclick="Open">Open Microphone</button>
+    <button class="btn btn-success" @onclick=OpenAudioStream>Open Microphone</button>
 }
 else if (recorder is null)
 {
@@ -32,6 +39,17 @@ else if (recorder is null)
         </g>
     </svg>
     <AmplitudePlot Analyser="liveAnalyzer" />
+    <br />
+    @if (audioOptions.Count > 0)
+    {
+        <label for="audioSource">Audio Source</label>
+        <select id="audioSource" @bind=selectedAudioSource @bind:after="OpenAudioStream">
+            @foreach (var option in audioOptions)
+            {
+                <option value="@option.id" selected="@(option.id == selectedAudioSource)">@option.label</option>
+            }
+        </select>
+    }
 }
 else if (audioBuffer is null)
 {
@@ -66,144 +84,6 @@ else
             <rect stroke="#B61C1C" stroke-width="1" fill="#B61C1C" x="5" y="5" width="6" height="6" stroke-linejoin="round"></rect>
         </g>
     </svg>
-    <AmplitudePlot Analyser="bufferAnalyzer" />
+    <AmplitudePlot @ref=plot Analyser="bufferAnalyzer" />
 }
 
-@code {
-    private string? error;
-    MediaStream? mediaStream;
-    MediaStreamAudioSourceNode? liveSourceNoce;
-    AnalyserNode? liveAnalyzer;
-
-    MediaRecorder? recorder;
-    EventListener<BlobEvent>? dataAvailableEventListener;
-    AudioBuffer? audioBuffer;
-    List<Blob> blobsRecorded = new();
-    AudioContext? context;
-    AudioBufferSourceNode? audioSourceNode;
-    AnalyserNode? bufferAnalyzer;
-
-    private async Task Open()
-    {
-        try
-        {
-            MediaDevices mediaDevices = await MediaDevicesService.GetMediaDevicesAsync();
-            mediaStream = await mediaDevices.GetUserMediaAsync(new MediaStreamConstraints() { Audio = true });
-
-            context = await AudioContext.CreateAsync(JSRuntime);
-
-            MediaStreamAudioSourceOptions options = new()
-                {
-                    MediaStream = mediaStream
-                };
-            liveSourceNoce = await MediaStreamAudioSourceNode.CreateAsync(JSRuntime, context, options);
-            liveAnalyzer = await AnalyserNode.CreateAsync(JSRuntime, context);
-            await liveSourceNoce.ConnectAsync(liveAnalyzer);
-        }
-        catch (WebIDLException ex)
-        {
-            error = $"{ex.GetType().Name}: {ex.Message}";
-        }
-    }
-
-    private async Task StartRecording()
-    {
-        if (mediaStream is null) return;
-
-        recorder = await MediaRecorder.CreateAsync(JSRuntime, mediaStream);
-
-        dataAvailableEventListener = await EventListener<BlobEvent>.CreateAsync(JSRuntime, async (BlobEvent e) =>
-        {
-            Blob blob = await e.GetDataAsync();
-            blobsRecorded.Add(blob);
-        });
-        await recorder.AddOnDataAvailableEventListenerAsync(dataAvailableEventListener);
-
-        await recorder.StartAsync();
-    }
-
-    private async Task StopRecording()
-    {
-        if (mediaStream is null || recorder is null || dataAvailableEventListener is null || context is null) return;
-
-        try
-        {
-            MediaStreamTrack[] audioTracks = await mediaStream.GetAudioTracksAsync();
-            foreach (MediaStreamTrack track in audioTracks)
-            {
-                await track.StopAsync();
-                await track.DisposeAsync();
-            }
-
-            await recorder.StopAsync();
-            await recorder.RemoveOnDataAvailableEventListenerAsync(dataAvailableEventListener);
-            await dataAvailableEventListener.DisposeAsync();
-            await recorder.DisposeAsync();
-
-            Blob combinedBlob = await Blob.CreateAsync(JSRuntime, [.. blobsRecorded] );
-
-            byte[] audioData = await combinedBlob.ArrayBufferAsync();
-            audioBuffer = await context.DecodeAudioDataAsync(audioData);
-        }
-        catch (WebIDLException ex)
-        {
-            error = $"{ex.GetType().Name}: {ex.Message}";
-        }
-    }
-
-    private async Task PlayRecording()
-    {
-        if (context is null || audioBuffer is null) return;
-
-        await using AudioDestinationNode destination = await context.GetDestinationAsync();
-
-        audioSourceNode = await AudioBufferSourceNode.CreateAsync(
-            JSRuntime,
-            context,
-            new() { Buffer = audioBuffer, Loop = true }
-        );
-
-        await audioSourceNode.ConnectAsync(destination);
-
-        bufferAnalyzer = await AnalyserNode.CreateAsync(JSRuntime, context);
-        await audioSourceNode.ConnectAsync(bufferAnalyzer);
-
-        await audioSourceNode.StartAsync();
-    }
-
-    private async Task StopPlayingRecording()
-    {
-        if (mediaStream is not null)
-        {
-            await mediaStream.DisposeAsync();
-            mediaStream = null;
-        }
-        if (recorder is not null)
-        {
-            await recorder.DisposeAsync();
-            recorder = null;
-        }
-        if (audioBuffer is not null)
-        {
-            await audioBuffer.DisposeAsync();
-            audioBuffer = null;
-        }
-        blobsRecorded.Clear();
-        if (context is not null)
-        {
-            await context.DisposeAsync();
-            context = null;
-        }
-        if (audioSourceNode is not null)
-        {
-            await audioSourceNode.DisconnectAsync();
-            await audioSourceNode.DisposeAsync();
-            audioSourceNode = null;
-        }
-    }
-
-    public async ValueTask DisposeAsync()
-    {
-        await StopPlayingRecording();
-    }
-}

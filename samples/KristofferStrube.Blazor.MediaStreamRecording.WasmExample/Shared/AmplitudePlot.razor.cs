@@ -12,6 +12,7 @@ public partial class AmplitudePlot : ComponentBase, IDisposable
     private bool running;
     private readonly System.Timers.Timer timer = new(20);
     private Uint8Array? timeDomainData;
+    private int step = 0;
 
     public required Canvas canvas;
     public string CanvasStyle => $"height:{Height}px;width:100%;";
@@ -43,7 +44,6 @@ public partial class AmplitudePlot : ComponentBase, IDisposable
         int bufferLength = (int)await Analyser.GetFftSizeAsync();
         timeDomainData = await Uint8Array.CreateAsync(JSRuntime, bufferLength);
 
-        int i = 0;
         timer.Elapsed += async (_, _) =>
         {
             await Analyser.GetByteTimeDomainDataAsync(timeDomainData);
@@ -54,27 +54,44 @@ public partial class AmplitudePlot : ComponentBase, IDisposable
 
             await using (Context2D context = await canvas.GetContext2DAsync())
             {
-                if (i == 0)
+                if (step == 0)
                 {
                     await context.FillAndStrokeStyles.FillStyleAsync($"#fff");
                     await context.FillRectAsync(0, 0, Width * 10, Height * 10);
                 }
 
                 await context.FillAndStrokeStyles.FillStyleAsync($"#fff");
-                await context.FillRectAsync(i * 10, 0, 10, Height * 10);
+                await context.FillRectAsync(step * 10, 0, 10, Height * 10);
 
                 await context.FillAndStrokeStyles.FillStyleAsync(Color);
-                await context.FillRectAsync(i * 10, (Height * 10 / 2.0) - (amplitude * Height * 10), 10, amplitude * 2 * Height * 10);
+                await context.FillRectAsync(step * 10, (Height * 10 / 2.0) - (amplitude * Height * 10), 10, amplitude * 2 * Height * 10);
             }
-            i++;
-            if (i == Width)
+            step++;
+            if (step == Width)
             {
-                i = 0;
+                step = 0;
             }
         };
 
         timer.AutoReset = true;
         timer.Enabled = true;
+    }
+
+    public async Task Reset()
+    {
+        try
+        {
+            await using Context2D context = await canvas.GetContext2DAsync();
+
+            await context.FillAndStrokeStyles.FillStyleAsync($"#fff");
+            await context.FillRectAsync(0, 0, Width * 10, Height * 10);
+
+            step = 0;
+        }
+        catch
+        {
+            // We ignore this as it was simply not rendered then.
+        }
     }
 
     public async void Dispose()
