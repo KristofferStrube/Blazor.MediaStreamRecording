@@ -9,28 +9,28 @@ namespace KristofferStrube.Blazor.MediaStreamRecording.WasmExample.Pages;
 public partial class Home
 {
     private string? error;
-    MediaStream? mediaStream;
-    private List<(string label, string id)> audioOptions = new();
+    private MediaStream? mediaStream;
+    private readonly List<(string label, string id)> audioOptions = new();
     private string? selectedAudioSource;
-    MediaStreamAudioSourceNode? liveSourceNoce;
-    AnalyserNode? liveAnalyzer;
+    private MediaStreamAudioSourceNode? liveSourceNoce;
+    private AnalyserNode? liveAnalyzer;
 
-    MediaRecorder? recorder;
-    EventListener<BlobEvent>? dataAvailableEventListener;
-    Blob? combinedBlob;
-    AudioBuffer? audioBuffer;
-    List<Blob> blobsRecorded = new();
-    AudioContext? context;
-    AudioBufferSourceNode? audioSourceNode;
-    AnalyserNode? bufferAnalyzer;
+    private MediaRecorder? recorder;
+    private EventListener<BlobEvent>? dataAvailableEventListener;
+    private Blob? combinedBlob;
+    private AudioBuffer? audioBuffer;
+    private readonly List<Blob> blobsRecorded = new();
+    private AudioContext? context;
+    private AudioBufferSourceNode? audioSourceNode;
+    private AnalyserNode? bufferAnalyzer;
 
-    AmplitudePlot plot;
+    private AmplitudePlot plot;
 
     private async Task OpenAudioStream()
     {
         try
         {
-            MediaTrackConstraints mediaTrackConstraints = new MediaTrackConstraints
+            var mediaTrackConstraints = new MediaTrackConstraints
             {
                 EchoCancellation = true,
                 NoiseSuppression = true,
@@ -41,9 +41,9 @@ public partial class Home
             MediaDevices mediaDevices = await MediaDevicesService.GetMediaDevicesAsync();
             mediaStream = await mediaDevices.GetUserMediaAsync(new MediaStreamConstraints() { Audio = mediaTrackConstraints });
 
-            var deviceInfos = await mediaDevices.EnumerateDevicesAsync();
+            MediaDeviceInfo[] deviceInfos = await mediaDevices.EnumerateDevicesAsync();
             audioOptions.Clear();
-            foreach (var device in deviceInfos)
+            foreach (MediaDeviceInfo device in deviceInfos)
             {
                 if (await device.GetKindAsync() is MediaDeviceKind.AudioInput)
                 {
@@ -128,6 +128,9 @@ public partial class Home
 
     private async Task PlayRecording()
     {
+        if (context is null)
+            return;
+
         await using AudioDestinationNode destination = await context.GetDestinationAsync();
 
         while (context is not null && audioBuffer is not null)
