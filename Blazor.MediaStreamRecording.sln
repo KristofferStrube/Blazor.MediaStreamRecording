@@ -7,6 +7,12 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "KristofferStrube.Blazor.Med
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "KristofferStrube.Blazor.MediaStreamRecording.WasmExample", "samples\KristofferStrube.Blazor.MediaStreamRecording.WasmExample\KristofferStrube.Blazor.MediaStreamRecording.WasmExample.csproj", "{C0AB6B1C-DAE7-460E-9E81-58CA07644FE5}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Tests", "Tests", "{B1EDEAE4-B11B-4BB2-A73D-70449BC1EF73}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "BlazorServer", "tests\BlazorServer\BlazorServer.csproj", "{7572692B-9AA8-4548-833B-38E41D6097D2}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "IntegrationTests", "tests\IntegrationTests\IntegrationTests.csproj", "{C25BB85F-29DF-4D3A-9496-733F581B25CC}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -21,9 +27,21 @@ Global
 		{C0AB6B1C-DAE7-460E-9E81-58CA07644FE5}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{C0AB6B1C-DAE7-460E-9E81-58CA07644FE5}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{C0AB6B1C-DAE7-460E-9E81-58CA07644FE5}.Release|Any CPU.Build.0 = Release|Any CPU
+		{7572692B-9AA8-4548-833B-38E41D6097D2}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{7572692B-9AA8-4548-833B-38E41D6097D2}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{7572692B-9AA8-4548-833B-38E41D6097D2}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{7572692B-9AA8-4548-833B-38E41D6097D2}.Release|Any CPU.Build.0 = Release|Any CPU
+		{C25BB85F-29DF-4D3A-9496-733F581B25CC}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{C25BB85F-29DF-4D3A-9496-733F581B25CC}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{C25BB85F-29DF-4D3A-9496-733F581B25CC}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{C25BB85F-29DF-4D3A-9496-733F581B25CC}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{7572692B-9AA8-4548-833B-38E41D6097D2} = {B1EDEAE4-B11B-4BB2-A73D-70449BC1EF73}
+		{C25BB85F-29DF-4D3A-9496-733F581B25CC} = {B1EDEAE4-B11B-4BB2-A73D-70449BC1EF73}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {B39DF7E0-5131-4AF6-935C-0D4C4BCFC5AA}
