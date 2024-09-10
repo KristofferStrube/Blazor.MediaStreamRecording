@@ -16,7 +16,8 @@ public class MediaRecorderOptions
     /// Individual codecs might have further optional or mandatory specific parameters.
     /// </remarks>
     [JsonPropertyName("mimeType")]
-    public string MimeType { get; set; } = "";
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public string? MimeType { get; set; }
 
     /// <summary>
     /// Aggregate target bits per second for encoding of the Audio track(s), if any.

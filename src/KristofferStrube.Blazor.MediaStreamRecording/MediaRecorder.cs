@@ -3,6 +3,7 @@ using KristofferStrube.Blazor.FileAPI;
 using KristofferStrube.Blazor.MediaCaptureStreams;
 using KristofferStrube.Blazor.MediaStreamRecording.Extensions;
 using KristofferStrube.Blazor.WebIDL;
+using KristofferStrube.Blazor.WebIDL.Exceptions;
 using KristofferStrube.Blazor.Window;
 using Microsoft.JSInterop;
 
@@ -23,14 +24,17 @@ public class MediaRecorder : EventTarget, IJSCreatable<MediaRecorder>
     /// <summary>
     /// Creates an <see cref="MediaRecorder"/> using the standard constructor.
     /// </summary>
+    /// <remarks>
+    /// If <paramref name="options"/> specifies a <see cref="MediaRecorderOptions.MimeType"/> which is not supported by the browser then it throws a <see cref="NotSupportedErrorException"/>.<br />
+    /// </remarks>
     /// <param name="jSRuntime">An <see cref="IJSRuntime"/> instance.</param>
     /// <param name="mediaStream">The <see cref="MediaStream"/> to be recorded.</param>
     /// <param name="options">Optional parameter value for this <see cref="MediaRecorder"/>.</param>
     /// <returns>A new instance of an <see cref="MediaRecorder"/>.</returns>
     public static async Task<MediaRecorder> CreateAsync(IJSRuntime jSRuntime, MediaStream mediaStream, MediaRecorderOptions? options = null)
     {
-        IJSObjectReference helper = await jSRuntime.GetHelperAsync();
-        IJSObjectReference jSInstance = await helper.InvokeAsync<IJSObjectReference>("constructMediaRecorder", mediaStream.JSReference, options);
+        await using ErrorHandlingJSObjectReference errorHandlingHelper = new(jSRuntime, await jSRuntime.GetHelperAsync());
+        IJSObjectReference jSInstance = await errorHandlingHelper.InvokeAsync<IJSObjectReference>("constructMediaRecorder", mediaStream.JSReference, options);
         return new MediaRecorder(jSRuntime, jSInstance, new() { DisposesJSReference = true });
     }
 
