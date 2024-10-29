@@ -17,7 +17,6 @@ public partial class Home
 
     private MediaRecorder? recorder;
     private EventListener<BlobEvent>? dataAvailableEventListener;
-    private Blob? combinedBlob;
     private string combinedBlobURL = "";
     private AudioBuffer? audioBuffer;
     private readonly List<Blob> blobsRecorded = [];
@@ -71,7 +70,9 @@ public partial class Home
     private async Task StartRecording()
     {
         if (mediaStream is null)
+        {
             return;
+        }
 
         try
         {
@@ -94,7 +95,10 @@ public partial class Home
 
     private async Task StopRecording()
     {
-        if (mediaStream is null || recorder is null || dataAvailableEventListener is null || context is null) return;
+        if (mediaStream is null || recorder is null || dataAvailableEventListener is null || context is null)
+        {
+            return;
+        }
 
         try
         {
@@ -110,12 +114,12 @@ public partial class Home
             await dataAvailableEventListener.DisposeAsync();
             await recorder.DisposeAsync();
 
-            combinedBlob = await Blob.CreateAsync(JSRuntime, [.. blobsRecorded], new() { Type = await blobsRecorded.First().GetTypeAsync() });
+            await using Blob combinedBlob = await Blob.CreateAsync(JSRuntime, [.. blobsRecorded], new() { Type = await blobsRecorded.First().GetTypeAsync() });
             combinedBlobURL = await URLService.CreateObjectURLAsync(combinedBlob);
 
             foreach (Blob blob in blobsRecorded)
             {
-                await blob.JSReference.DisposeAsync();
+                await blob.DisposeAsync();
             }
 
             byte[] audioData = await combinedBlob.ArrayBufferAsync();
@@ -131,7 +135,9 @@ public partial class Home
     private async Task PlayRecording()
     {
         if (context is null)
+        {
             return;
+        }
 
         await using AudioDestinationNode destination = await context.GetDestinationAsync();
 
@@ -157,7 +163,9 @@ public partial class Home
             await audioSourceNode.ConnectAsync(destination);
 
             if (bufferAnalyzer is not null)
+            {
                 await bufferAnalyzer.DisposeAsync();
+            }
 
             bufferAnalyzer = await AnalyserNode.CreateAsync(JSRuntime, context);
             await audioSourceNode.ConnectAsync(bufferAnalyzer);
@@ -201,11 +209,10 @@ public partial class Home
         {
             await audioSourceNode.StopAsync();
         }
-        if (combinedBlob is not null)
-            await combinedBlob.JSReference.DisposeAsync();
-
         if (combinedBlobURL is not "")
+        {
             await URLService.RevokeObjectURLAsync(combinedBlobURL);
+        }
     }
 
     public async ValueTask DisposeAsync()

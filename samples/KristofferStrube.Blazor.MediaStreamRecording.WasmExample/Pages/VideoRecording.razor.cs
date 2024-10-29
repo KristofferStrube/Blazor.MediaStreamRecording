@@ -15,11 +15,9 @@ public partial class VideoRecording
 
     private MediaRecorder? recorder;
     private EventListener<BlobEvent>? dataAvailableEventListener;
-    private Blob? combinedBlob;
     private string combinedBlobURL = "";
     private readonly List<Blob> blobsRecorded = [];
-
-    bool playing = false;
+    private bool playing = false;
     private ElementReference videoElement;
 
     private async Task OpenVideoStream()
@@ -46,7 +44,7 @@ public partial class VideoRecording
 
             StateHasChanged();
             // We don't have a wrapper for HtmlMediaElement's yet so we use simple JSInterop for this part.
-            var htmlMediaElement = await JSRuntime.InvokeAsync<IJSObjectReference>("getReference", videoElement);
+            IJSObjectReference htmlMediaElement = await JSRuntime.InvokeAsync<IJSObjectReference>("getReference", videoElement);
             await JSRuntime.InvokeVoidAsync("setAttribute", htmlMediaElement, "srcObject", mediaStream);
         }
         catch (WebIDLException ex)
@@ -58,7 +56,9 @@ public partial class VideoRecording
     private async Task StartRecording()
     {
         if (mediaStream is null)
+        {
             return;
+        }
 
         try
         {
@@ -75,7 +75,7 @@ public partial class VideoRecording
 
             StateHasChanged();
             // We don't have a wrapper for HtmlMediaElement's yet so we use simple JSInterop for this part.
-            var htmlMediaElement = await JSRuntime.InvokeAsync<IJSObjectReference>("getReference", videoElement);
+            IJSObjectReference htmlMediaElement = await JSRuntime.InvokeAsync<IJSObjectReference>("getReference", videoElement);
             await JSRuntime.InvokeVoidAsync("setAttribute", htmlMediaElement, "srcObject", mediaStream);
         }
         catch (WebIDLException ex)
@@ -86,7 +86,10 @@ public partial class VideoRecording
 
     private async Task StopRecording()
     {
-        if (mediaStream is null || recorder is null || dataAvailableEventListener is null) return;
+        if (mediaStream is null || recorder is null || dataAvailableEventListener is null)
+        {
+            return;
+        }
 
         try
         {
@@ -102,12 +105,12 @@ public partial class VideoRecording
             await dataAvailableEventListener.DisposeAsync();
             await recorder.DisposeAsync();
 
-            combinedBlob = await Blob.CreateAsync(JSRuntime, [.. blobsRecorded], new() { Type = await blobsRecorded.First().GetTypeAsync() });
+            await using Blob combinedBlob = await Blob.CreateAsync(JSRuntime, [.. blobsRecorded], new() { Type = await blobsRecorded.First().GetTypeAsync() });
             combinedBlobURL = await URLService.CreateObjectURLAsync(combinedBlob);
 
             foreach (Blob blob in blobsRecorded)
             {
-                await blob.JSReference.DisposeAsync();
+                await blob.DisposeAsync();
             }
         }
         catch (WebIDLException ex)
@@ -116,7 +119,7 @@ public partial class VideoRecording
         }
     }
 
-    private async Task PlayRecording()
+    private void PlayRecording()
     {
         playing = true;
     }
@@ -133,11 +136,10 @@ public partial class VideoRecording
             await recorder.DisposeAsync();
             recorder = null;
         }
-        if (combinedBlob is not null)
-            await combinedBlob.JSReference.DisposeAsync();
-
         if (combinedBlobURL is not "")
+        {
             await URLService.RevokeObjectURLAsync(combinedBlobURL);
+        }
 
         playing = false;
     }
