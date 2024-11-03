@@ -139,6 +139,7 @@ public partial class VideoRecording
         if (combinedBlobURL is not "")
         {
             await URLService.RevokeObjectURLAsync(combinedBlobURL);
+            combinedBlobURL = "";
         }
 
         playing = false;

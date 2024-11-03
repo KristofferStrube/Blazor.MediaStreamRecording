@@ -50,7 +50,7 @@ else if (recorder is null)
     <br />
     <video @ref="videoElement" height="400" autoplay controls></video>
 }
-else if (combinedBlob is null)
+else if (combinedBlobURL is "")
 {
     <svg class="bi" viewBox="0 0 16 16" height="60">
         <g @onclick="StopRecording" style="cursor:pointer">
