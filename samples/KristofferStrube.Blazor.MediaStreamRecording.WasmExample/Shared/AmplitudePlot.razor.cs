@@ -46,6 +46,9 @@ public partial class AmplitudePlot : ComponentBase, IDisposable
 
         timer.Elapsed += async (_, _) =>
         {
+            if (Analyser is null)
+                return;
+
             await Analyser.GetByteTimeDomainDataAsync(timeDomainData);
 
             byte[] reading = await timeDomainData.GetAsArrayAsync();

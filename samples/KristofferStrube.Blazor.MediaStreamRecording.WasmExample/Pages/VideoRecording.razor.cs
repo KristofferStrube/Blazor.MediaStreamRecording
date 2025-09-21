@@ -64,6 +64,7 @@ public partial class VideoRecording
         {
             recorder = await MediaRecorder.CreateAsync(JSRuntime, mediaStream);
 
+            blobsRecorded.Clear();
             dataAvailableEventListener = await EventListener<BlobEvent>.CreateAsync(JSRuntime, async (BlobEvent e) =>
             {
                 Blob blob = await e.GetDataAsync();
@@ -93,25 +94,37 @@ public partial class VideoRecording
 
         try
         {
-            MediaStreamTrack[] videoTracks = await mediaStream.GetVideoTracksAsync();
-            foreach (MediaStreamTrack track in videoTracks)
+            // Event listener for when it actually stopped.
+            EventListener<Event> stopEventListener = default!;
+            stopEventListener = await EventListener<Event>.CreateAsync(JSRuntime, async _ =>
             {
-                await track.StopAsync();
-                await track.DisposeAsync();
-            }
+                MediaStreamTrack[] videoTracks = await mediaStream.GetVideoTracksAsync();
+                foreach (MediaStreamTrack track in videoTracks)
+                {
+                    await track.StopAsync();
+                    await track.DisposeAsync();
+                }
 
+                await recorder.RemoveOnStopEventListenerAsync(stopEventListener);
+                await stopEventListener.DisposeAsync();
+
+                await recorder.RemoveOnDataAvailableEventListenerAsync(dataAvailableEventListener);
+                await dataAvailableEventListener.DisposeAsync();
+                await recorder.DisposeAsync();
+
+                await using Blob combinedBlob = await Blob.CreateAsync(JSRuntime, [.. blobsRecorded], new() { Type = await blobsRecorded.First().GetTypeAsync() });
+                combinedBlobURL = await URLService.CreateObjectURLAsync(combinedBlob);
+
+                foreach (Blob blob in blobsRecorded)
+                {
+                    await blob.DisposeAsync();
+                }
+                StateHasChanged();
+            });
+            await recorder.AddOnStopEventListenerAsync(stopEventListener);
+
+            // Queue stop
             await recorder.StopAsync();
-            await recorder.RemoveOnDataAvailableEventListenerAsync(dataAvailableEventListener);
-            await dataAvailableEventListener.DisposeAsync();
-            await recorder.DisposeAsync();
-
-            await using Blob combinedBlob = await Blob.CreateAsync(JSRuntime, [.. blobsRecorded], new() { Type = await blobsRecorded.First().GetTypeAsync() });
-            combinedBlobURL = await URLService.CreateObjectURLAsync(combinedBlob);
-
-            foreach (Blob blob in blobsRecorded)
-            {
-                await blob.DisposeAsync();
-            }
         }
         catch (WebIDLException ex)
         {
