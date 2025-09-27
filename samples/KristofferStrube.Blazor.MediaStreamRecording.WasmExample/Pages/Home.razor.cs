@@ -35,8 +35,11 @@ public partial class Home
                 EchoCancellation = true,
                 NoiseSuppression = true,
                 AutoGainControl = false,
-                DeviceId = selectedAudioSource is null ? null : new ConstrainDomString(selectedAudioSource)
             };
+            if (selectedAudioSource is not null)
+            {
+                mediaTrackConstraints.DeviceId = new ConstrainDOMStringParameters() { Exact = selectedAudioSource };
+            }
 
             MediaDevices mediaDevices = await MediaDevicesService.GetMediaDevicesAsync();
             mediaStream = await mediaDevices.GetUserMediaAsync(new MediaStreamConstraints() { Audio = mediaTrackConstraints });

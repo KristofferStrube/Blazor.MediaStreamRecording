@@ -24,10 +24,11 @@ public partial class VideoRecording
     {
         try
         {
-            var mediaTrackConstraints = new MediaTrackConstraints
+            var mediaTrackConstraints = new MediaTrackConstraints();
+            if (selectedVideoSource is not null)
             {
-                DeviceId = selectedVideoSource is null ? null : new ConstrainDomString(selectedVideoSource)
-            };
+                mediaTrackConstraints.DeviceId = new ConstrainDOMStringParameters() { Exact = selectedVideoSource };
+            }
 
             MediaDevices mediaDevices = await MediaDevicesService.GetMediaDevicesAsync();
             mediaStream = await mediaDevices.GetUserMediaAsync(new MediaStreamConstraints() { Video = mediaTrackConstraints });
