@@ -57,8 +57,8 @@ public class BlobEvent : Event, IJSCreatable<BlobEvent>
     public async Task<Blob> GetDataAsync()
     {
         await using IJSObjectReference helper = await mediaStreamHelperTask.Value;
-        IJSObjectReference jSIntance = await helper.InvokeAsync<IJSObjectReference>("getAttribute", JSReference, "data");
-        return await Blob.CreateAsync(JSRuntime, jSIntance, new() { DisposesJSReference = true });
+        IJSObjectReference jSInstance = await helper.InvokeAsync<IJSObjectReference>("getAttribute", JSReference, "data");
+        return await Blob.CreateAsync(JSRuntime, jSInstance, new() { DisposesJSReference = true });
     }
 
     /// <summary>
