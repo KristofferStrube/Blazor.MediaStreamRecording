@@ -6,7 +6,7 @@ using KristofferStrube.Blazor.WebAudio;
 using KristofferStrube.Blazor.WebIDL.Exceptions;
 
 namespace KristofferStrube.Blazor.MediaStreamRecording.WasmExample.Pages;
-public partial class Home
+public partial class Home : IAsyncDisposable
 {
     private string? error;
     private MediaStream? mediaStream;

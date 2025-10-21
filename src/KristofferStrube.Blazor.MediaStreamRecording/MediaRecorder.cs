@@ -34,7 +34,7 @@ public class MediaRecorder : EventTarget, IJSCreatable<MediaRecorder>
     public static async Task<MediaRecorder> CreateAsync(IJSRuntime jSRuntime, MediaStream mediaStream, MediaRecorderOptions? options = null)
     {
         await using IJSObjectReference helper = await jSRuntime.GetHelperAsync();
-        IJSObjectReference jSInstance = await jSRuntime.InvokeAsync<IJSObjectReference>("constructMediaRecorder", mediaStream.JSReference, options);
+        IJSObjectReference jSInstance = await helper.InvokeAsync<IJSObjectReference>("constructMediaRecorder", mediaStream.JSReference, options);
         return new MediaRecorder(jSRuntime, jSInstance, new() { DisposesJSReference = true });
     }
 
